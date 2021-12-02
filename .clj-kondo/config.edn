@@ -1,1 +1,1 @@
-{:config-paths ["com.fulcrologic/fulcro" "com.wsscode/async" "com.wsscode/pathom"]}
+{:config-paths ["com.fulcrologic/fulcro" "com.wsscode/pathom" "com.wsscode/async"]}

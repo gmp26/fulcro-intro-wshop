@@ -14,6 +14,12 @@ Fulcro is unique among Clojure web frameworks in providing a complete, integrate
 
 In this workshop you will get a brief introduction to Fulcro and then get your hands dirty exploring the concepts in practice on an existing application in a series of guided exercises. We will use the excellent Fulcro Inspect tooling and mess up with the code.
 
+You can find the workshop materials [here](docs), including:
+
+* [Course introduction](docs/INTRO.md)
+* [Instructor's manual](docs/Instructor_manual.adoc)
+* [Student exercises](docs/Workshop.adoc)
+
 Prerequisites
 --------------
 
@@ -35,7 +41,7 @@ To do right now:
   * Install [Fulcro Inspect](https://chrome.google.com/webstore/detail/fulcro-inspect/meeijplnfjcihnhkpanepcaffklobaal)
   * Install [React Developer Tools](https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi)
   * Restart the browser after you install the two plugins
-  * Configure [Chrome Development Settings](https://developers.google.com/web/tools/chrome-devtools/customize): 
+  * Configure [Chrome Development Settings](https://developers.google.com/web/tools/chrome-devtools/customize):
     * Under "Console": "Enable Custom Formatters"
     * Under "Network": "Disable Cache (while devtools is open)"
 * (Optional, recommended) Install VS Code with Calva
@@ -66,7 +72,7 @@ To run the application using Calva:
 * Wait a few seconds, then select `:todomvc` for the build to connect to
 * Once you see the message `[:todomvc] Build completed.` in the Calva Jack-in terminal:
     1. Open the file `src/fulcro_todomvc/server.clj` (_Go_ - _Go to File..._)
-    1. Load the file by executing the command _Calva: Load current Current File and Dependencies_
+    1. Load the file by executing the command _View - Command Palette... - Calva: Load current Current File and Dependencies_
     1. Scroll down to the `(comment ...)` form and place the cursor in `(http-server)`, then press `alt+enter`
        * This will evaluate the form (call the `http-server` function)
        * The web browser will open with your application
@@ -86,7 +92,7 @@ Clojure 1.10.3
 user=> ((requiring-resolve 'fulcro-todomvc.server/http-server))
 ```
 
-Connect you editor to the browser REPL. In Calva, execute _Calva: Connect to a Running REPL Server in the Project_ - select shadow-cljs - accept the default localhost:9000.
+Connect your editor to the browser REPL. In Calva, execute _Calva: Connect to a Running REPL Server in the Project_ - select shadow-cljs - accept the default localhost:9000.
 
 Shadow-cljs runs a number of things:
 
