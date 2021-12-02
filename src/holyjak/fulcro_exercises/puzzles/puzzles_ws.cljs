@@ -8,12 +8,12 @@
     [nubank.workspaces.core :as ws]
     [nubank.workspaces.model :as wsm]
     [nubank.workspaces.card-types.fulcro3 :as ct.fulcro]
-    [com.fulcrologic.fulcro.mutations :as m]
+    [com.fulcrologic.fulcro.mutations :as m :refer [defmutation]]
     [com.fulcrologic.fulcro.dom :as dom]))
 
 ;;----------------------------------------------------------------------------------
 ;; PUZZLE 1
-(m/defmutation toggle-color [_]
+(defmutation toggle-color [_]
   (action [{:keys [state]}]
           (swap! state update :ui/red? not)))
 

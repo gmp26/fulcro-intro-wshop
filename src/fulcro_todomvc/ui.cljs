@@ -10,7 +10,8 @@
     [fulcro-todomvc.api :as api]
     [fulcro-todomvc.app :refer [app]]
     [goog.object :as gobj]
-    [cljs.pprint :as pprint]))
+    [cljs.pprint :as pprint]
+   [shadow.debug :refer [?-> ?->> locals]]))
 
 (defn is-enter? [evt] (= 13 (.-keyCode evt)))
 (defn is-escape? [evt] (= 27 (.-keyCode evt)))
@@ -156,22 +157,51 @@
 (defsc Root [this {:root/keys [current-list] :as props}]
   {:query         [{:root/current-list (comp/get-query TodoList)}]}
   (dom/div {}
-    (ui-todo-list current-list)))
+           (ui-todo-list current-list)))
 
 (comment
+
   ;; Exercise 3.1
-  (comp/get-query TodoItem) ; TodoList, Root
+  (comp/get-query TodoItem)
+  ;; => [:item/id :item/label :item/complete :ui/editing :ui/edit-text]
+ ; TodoItem, Root
+  (comp/get-query TodoList)
+  ;; => [:list/id
+  ;;     :ui/new-item-text
+  ;;     #:list{:items [:item/id :item/label :item/complete :ui/editing :ui/edit-text]}
+  ;;     :list/title
+  ;;     :list/filter]
+ ; TodoList, Root
   ;; Exercise 3.2
-  (-> (comp/ident->components app [:item/id 2])
+  (-> (comp/ident->components app [:item/id #uuid "3d182fc5-5eeb-4246-805c-22154e4acea6"])
       first
       (comp/props)
       ;; BEWARE: Open Shadow-cljs Inspect to see the output, see the instructions
       (tap>))
+  
+  ;; TodoList props
+  (-> (comp/ident->components app [:list/id 1])
+      first
+      (comp/props)
+      ;; BEWARE: Open Shadow-cljs Inspect to see the output, see the instructions
+      (tap>))
+  ;; => true
+
+
   ;; _Exercise 3.5
   (binding [*print-meta* true] (tap> (pr-str (comp/get-query TodoList))))
+  ;; => true
+
 
   ;; Exercise 4.1
   (comp/get-query Root)
+  ;; => [#:root{:current-list
+  ;;            [:list/id
+  ;;             :ui/new-item-text
+  ;;             #:list{:items [:item/id :item/label :item/complete :ui/editing :ui/edit-text]}
+  ;;             :list/title
+  ;;             :list/filter]}]
+
   ;; Exercise 4.2
   (tap> (comp/get-query Root))
   ;; Exercise 4.3
@@ -182,6 +212,8 @@
 
   ;; Exercise 5.4
   (tap> (app/current-state app))
+  ;; => true
+
 
   ;; Exercise 7.1
   (df/load! app [:list/id 2] TodoList)
@@ -192,4 +224,4 @@
   (comp/transact! app [(api/todo-check {:id 3})])
 
 
-  )
+)

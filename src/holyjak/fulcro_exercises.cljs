@@ -33,7 +33,7 @@
 
 ;; ### TODO: Read the namespace docstring for instructions how to work with the exercises ###
 
-(do; comment
+(comment
   (do
     ;; TASK 0.0: Comment this out by replacing the `(do; comment` above with `(comment` and go on to the next exercise.
     ;; LEARNING OBJECTIVES: Get familiar with switching from an exercise to another.
@@ -82,7 +82,13 @@
     ;; - https://reactjs.org/docs/dom-elements.html#style
     (defsc Root1 [_ _]
       {}
-      "TODO")
+      (dom/div {}
+       (dom/h1 {:.id "title" :style {:textAlign "center"}} "Fulcro is")
+               (dom/ul {}
+                       (dom/li {} "Malleable")
+                       (dom/li {} "Full stack")
+                       (dom/li {} "Well-designed")
+                       )))
 
     (config-and-render! Root1)))
 
@@ -103,11 +109,22 @@
     ;; RESOURCES:
     ;; - https://fulcro-community.github.io/guides/tutorial-minimalist-fulcro/#_the_anatomy_of_a_fulcro_component_query_ident_body
     (def value-proposition-points
-      [{:proposition/label "Malleable"} {:proposition/label "Full-stack"} {:proposition/label "Well-designed"}])
+      [{:proposition/label "Malleable"} {:proposition/label "Full stack"} {:proposition/label "Well-designed"}])
+
+    (defsc ValuePropositionPoint [_ {:proposition/keys [label] :as props}]
+      {}
+      (li {} label))
+
+    (def value-proposition-point (comp/factory ValuePropositionPoint {:keyfn :proposition/label}))
+    
+
 
     (defsc Root2 [_ _]
       {}
-      "TODO")
+      (div {}
+               (h1 :#title-2 {:style {:textAlign "center"}} "Fulcro is")
+               (ul {}
+                   (map value-proposition-point value-proposition-points))))
 
     (config-and-render! Root2)
     ; (hint 2)
@@ -115,7 +132,7 @@
     ;; Task 2.b: Make sure you do not get the React error <<Each child in a list
     ;; should have a unique "key" prop.>> in the Chrome Console.
     ; (hint 2)
-    ,))
+    ))
 
 (comment ; 3 "Externalizing data"
   (do
@@ -130,28 +147,39 @@
     ;;
     ;; RESOURCES:
     ;; - https://fulcro-community.github.io/guides/tutorial-minimalist-fulcro/#_the_anatomy_of_a_fulcro_component_query_ident_body
-    (defsc Root3 [_ _]
-      {}
-      "TODO")
 
-    (config-and-render!
-      Root3
-      {:initial-db
+    (defsc ValuePropositionPoint [_ {:proposition/keys [label] :as props}]
+      {:query [:proposition/label]}
+      (li {} label))
+    
+    (def value-proposition-point (comp/factory ValuePropositionPoint {:keyfn :proposition/label}))
+
+    (defsc Root3 [_ {:page/keys [heading value-proposition-points] :as props}]
+      {:query         [:page/heading {:page/value-proposition-points (comp/get-query ValuePropositionPoint)}]}
+      (div {}
+           (h1 :#title-2 {:style {:textAlign "center"}} heading)
+           (ul {}
+               (map value-proposition-point value-proposition-points))))
+
+    (def app3 (config-and-render!
+               Root3
+               {:initial-db
        ;; NOTE: Normally the initial-db we pass here should be already normalized but
        ;; since we do not care about normalization and are happy with denormalized data
        ;; in this exercise, it is OK to pass in the data tree as-is.
        ;; BEWARE: The initial data is only processed at app initialization, i.e.
        ;; not after hot-reloading of a code change
-       {:page/heading "<3> Fulcro is:"
-        :page/value-proposition-points
-                      [{:proposition/label "Malleable"}
-                       {:proposition/label "Full-stack"}
-                       {:proposition/label "Well-designed"}]}})
+                {:page/heading "<3> Fulcro is:"
+                 :page/value-proposition-points
+                 [{:proposition/label "Malleable"}
+                  {:proposition/label "Full-stack"}
+                  {:proposition/label "Well-designed"}]}}))
 
     ;(hint 3)
     ;; Tip: Use Fulcro Inspect to see the content of the client DB
     ;;      Also try to use the provided `(show-client-db)` function for that.
-    ,))
+    ))
+(show-client-db)
 
 (comment ; 4 "Insert data into the client DB with merge/merge!"
   (do
@@ -170,18 +198,32 @@
     ;;   is relevant because merge! behaves very similary to merge-component! - the difference is that it works for the Root instead of
     ;;   some child component and it takes a query instead of a component (because it doesn't need an ident)
     ;; - merge! docs: https://book.fulcrologic.com/#_using_com_fulcrologic_fulcro_componentsmerge
-    (defsc Root4 [_ _]
-      {}
-      "TODO")
+
+    (defsc ValuePropositionPoint [_ {:proposition/keys [label]}]
+      {:query [:proposition/label]}
+      (li {} label))
+
+    (def value-proposition-point (comp/factory ValuePropositionPoint {:keyfn :proposition/label}))
+
+    (defsc Root4 [_ {:page/keys [heading value-proposition-points] :as props}]
+      {:query         [:page/heading {:page/value-proposition-points (comp/get-query ValuePropositionPoint)}]}
+      (div {}
+           (h1 :#title-2 {:style {:textAlign "center"}} heading)
+           (ul {}
+               (map value-proposition-point value-proposition-points))))
 
     (def app4 (config-and-render! Root4))
 
     ;; What do you think the client DB will look like? Think, write it down, then check it
     ;; using Fulcro Inspect - DB (or `(show-client-db)`)
-    (merge/merge! app4 nil nil) ; TODO Implement
+    (merge/merge! app4 {:page/heading "<4> Fulcro is:"
+                        :page/value-proposition-points
+                        [{:proposition/label "Malleable"}
+                         {:proposition/label "Full-stack"}
+                         {:proposition/label "Well-designed"}]} [:page/heading :page/value-proposition-points]) ; TODO Implement
     ; (hint 4)
     ; (hint 4)
-    ,))
+    ))
 
 (comment ; 5 "Normalization and merge! and merge-component!"
   (do
@@ -208,44 +250,55 @@
     ;; - https://fulcro-community.github.io/guides/tutorial-minimalist-fulcro/#_pre_study_merging_data_into_the_client_db_with_merge_component
     ;;   + https://fulcro-community.github.io/guides/tutorial-minimalist-fulcro/#_targeting_adding_references_to_the_new_data_to_existing_entities
     ;; - https://book.fulcrologic.com/#_using_mergemerge_component
-    (defsc Address [_ {city :address/city}]
-      {:query [:address/city]}
+    (defsc Address [_ {id :address/id
+                       city :address/city}]
+      {:ident :address/id
+       :query [:address/id :address/city]}
       (p "City: " city))
 
+
     (defsc Player [_ {:player/keys [name address]}]
-      {:query [:player/id :player/name :player/address]}
+      {:ident :player/id
+       :query [:player/id :player/name {:player/address (comp/get-query Address)}]}
       (li "name: " name " lives at: " ((comp/factory Address) address)))
 
     (def ui-player (comp/factory Player {:keyfn :player/id}))
 
     (defsc Team [_ {:team/keys [name players]}]
-      {:query [:team/id :team/name :team/players]}
+      {:ident :team/id
+       :query [:team/id :team/name {:team/players (comp/get-query Player)}]}
       (div (h2 "Team " name ":")
            (ol (map ui-player players))))
 
     (def ui-team (comp/factory Team {:keyfn :team/id}))
 
     (defsc Root5 [_ {teams :teams}]
-      {:query [:teams]} ; NOTE: This is on purpose incomplete
+      {:query [{:teams (comp/get-query Team)}]} ; NOTE: This is on purpose incomplete
       (div
-        (h1 "Teams")
-        (p "Debug: teams = " (dom/code (pr-str teams)))
-        (map ui-team teams)))
+       (h1 "Teams")
+       (p "Debug: teams = " (dom/code (pr-str teams)))
+       
+       (map ui-team teams)))
 
     (def data-tree
       "The data that our UI should display"
       {:teams [#:team{:name "Hikers" :id :hikers
-                      :players [#:player{:name "Jon" :address #:address{:city "Oslo"} :id 1}
-                                #:player{:name "Ola" :address #:address{:city "Trondheim"} :id 2}]}]})
+                      :players [#:player{:name "Jon" :address #:address{:city "Oslo" :id 17} :id 1}
+                                #:player{:name "Ola" :address #:address{:city "Trondheim" :id 18} :id 2}]}]})
 
     ;; Render the app (without any data so far):
     (def app5 (config-and-render! Root5))
 
+    (comment
+      (comp/get-query Root5)
+      ;; => [:teams]
+      )
+
     ;; Now:
     ;; 1. Uncomment, complete, and run the merge/merge! call below to insert the data-tree into
     ;;    the client DB. Check the UI shows it.
-    (comment (merge/merge! ...))
-    ; (hint 5)
+    (merge/merge! app5 data-tree (comp/get-query Root5))
+    ;(hint 5)
     ; (hint 5)
 
     ;; More tasks!
@@ -267,9 +320,9 @@
     ; (hint 5)
     ; (hint 5)
     ; (hint 5)
-    ,))
+    ))
 
-(comment ; 6 Client-side mutations
+(do ;comment ; 6 Client-side mutations
   (do
     ;; TASK:
     ;; Enable the user to select individual elements or all at once
@@ -316,14 +369,24 @@
                   [_ player-id]           players]
               [player-id team-id])))
 
+
+    #_(defmutation set-player-checked [:keys [id value]]
+      (action {:keys [state ref]}
+              (swap! state assoc :ui/checked? value)
+               #_'(set-players-checked {:players [id] :value (not checked?)})))
+    ;)
+    
     (defsc Player [this {:keys [player/id player/name ui/checked?]}]
       {:query [:player/id :player/name :ui/checked?]
        :ident :player/id}
       (li
-        (input {:type    "checkbox"
-                :checked (boolean checked?)
-                :onClick #(println "TODO: trigger the mutation `(set-players-checked {:players [id] :value (not checked?)})`")})
-        name))
+       (input {:type    "checkbox"
+               :checked (boolean checked?)
+               :onClick #_(transact! this [(set-players-checked {:players [id] :value (not checked?)})])
+               #(println "TODO: trigger the mutation `(set-players-checked {:players [id] :value (not checked?)})`")})
+       name))
+
+
 
     (def ui-player (comp/factory Player {:keyfn :player/id}))
 
@@ -343,24 +406,26 @@
     (defsc Root6 [this {teams :teams}]
       {:query [{:teams (comp/get-query Team)}]}
       (form
-        (h1 "Teams")
-        (button {:type "button"
-                 :onClick #(println "TODO: trigger the mutation `(delete-selected nil)`")}  ; TODO implement
-                "Delete selected")
-        (map ui-team teams)))
+       (h1 "Teams")
+       (button {:type "button"
+                :onClick #(println "TODO: trigger the mutation `(delete-selected nil)`")}  ; TODO implement
+               "Delete selected")
+       (map ui-team teams)))
 
     (def app6 (config-and-render! Root6))
 
     (run!
-      #(merge/merge-component! app6 Team % :append [:teams])
-      [#:team{:name "Explorers" :id :explorers
-              :players [#:player{:id 1 :name "Jo"}
-                        #:player{:id 2 :name "Ola"}
-                        #:player{:id 3 :name "Anne"}]}
-       #:team{:name "Bikers" :id :bikers
-              :players [#:player{:id 4 :name "Cyclotron"}]}])
+     #(merge/merge-component! app6 Team % :append [:teams])
+     [#:team{:name "Explorers" :id :explorers
+             :players [#:player{:id 1 :name "Jo"}
+                       #:player{:id 2 :name "Ola"}
+                       #:player{:id 3 :name "Anne"}]}
+      #:team{:name "Bikers" :id :bikers
+             :players [#:player{:id 4 :name "Cyclotron"}]}])))
 
-    ,))
+
+(hint 6)
+
 
 (comment ; 7 load!-ing data from a remote
   (do

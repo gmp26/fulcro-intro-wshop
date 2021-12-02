@@ -6,13 +6,13 @@
     [nubank.workspaces.core :as ws]
     [nubank.workspaces.model :as wsm]
     [nubank.workspaces.card-types.fulcro3 :as ct.fulcro]
-    [com.fulcrologic.fulcro.mutations :as m]
+    [com.fulcrologic.fulcro.mutations :as m :refer [defmutation]]
     [com.fulcrologic.fulcro.dom :as dom]))
 
 
 ;;----------------------------------------------------------------------------------
 ;; PUZZLE 1
-(m/defmutation toggle-color [_]
+(defmutation toggle-color [_]
   (action [{:keys [state]}]
           ;;; NOTE: There is also `(m/toggle! <component this> :ui/red?)` so ideally
           ;;        we would use that *inside* the component instead of the (transact! ...) call
@@ -28,7 +28,7 @@
                     :color "white"}}
     (dom/p "The button bellow should change the background color from blue
              to red (and back) but it does not work. Fix it.")
-    (dom/button {:onClick #(comp/transact! this [(toggle-color)])
+    (dom/button {:onClick #(comp/transact! this [(toggle-color nil)])
                  :style {:backgroundColor "unset"
                          :color "white"}}
       (str "Make " (if red? "blue" "red")))))

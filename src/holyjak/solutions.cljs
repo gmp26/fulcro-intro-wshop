@@ -9,6 +9,7 @@
     [com.fulcrologic.fulcro.components :as comp :refer [defsc transact!]]
     [com.fulcrologic.fulcro.data-fetch :as df]
     [com.fulcrologic.fulcro.mutations :refer [defmutation]]
+    ;[com.fulcrologic.fulcro.mutations :as m :refer [defmutation]]
     [com.fulcrologic.fulcro.dom :as dom :refer [button div form h1 h2 h3 input label li ol p ul]]
     [com.wsscode.pathom.connect :as pc :refer [defresolver]]))
 
@@ -133,28 +134,28 @@
   ;; VARIANT 5.1
   (do
     (defsc Address [_ {city :address/city}]
-           {:query [:address/city]}
-           (p "City: " city))
+      {:query [:address/city]}
+      (p "City: " city))
 
     (defsc Player [_ {:player/keys [name address]}]
-           {:query [:player/id :player/name :player/address]}
-           (li "name: " name " lives at: " ((comp/factory Address) address)))
+      {:query [:player/id :player/name :player/address]}
+      (li "name: " name " lives at: " ((comp/factory Address) address)))
 
     (def ui-player (comp/factory Player {:keyfn :player/id}))
 
     (defsc Team [_ {:team/keys [name players]}]
-           {:query [:team/id :team/name :team/players]}
-           (div (h2 "Team " name ":")
-                (ol (map ui-player players))))
+      {:query [:team/id :team/name :team/players]}
+      (div (h2 "Team " name ":")
+           (ol (map ui-player players))))
 
     (def ui-team (comp/factory Team {:keyfn :team/id}))
 
     (defsc Root5 [_ {teams :teams}]
-           {:query [:teams]} ; NOTE: This is on purpose incomplete
-           (div
-             (h1 "Teams")
-             (p "Debug: teams = " (dom/code (pr-str teams)))
-             (map ui-team teams)))
+      {:query [:teams]} ; NOTE: This is on purpose incomplete
+      (div
+       (h1 "Teams")
+       (p "Debug: teams = " (dom/code (pr-str teams)))
+       (map ui-team teams)))
 
     (def data-tree
       "The data that our UI should display"
@@ -165,50 +166,54 @@
     ;; Render the app (without any data so far):
     (def app5 (config-and-render! Root5))
 
-    (merge/merge! app5 data-tree (comp/get-query Root5))
-    ,))
+    (merge/merge! app5 data-tree (comp/get-query Root5))))
 
 (comment ; 5 "Normalization and merge-component!"
   ;; VARIANT 5.2 + 5.3
   (do
-    (defsc Address [_ {city :address/city}]
-           {:query [:address/city]
-            :ident :address/city}
-           (p "City: " city))
+    (defsc Address [_ {:address/keys [id city]}]
+      {:query [:address/id :address/city]
+       :ident :address/id}
+      (p "City: " city " " id))
 
     (defsc Player [_ {:player/keys [name address]}]
-           {:query [:player/id :player/name {:player/address (comp/get-query Address)}]
-            :ident :player/id}
-           (li "name: " name " lives at: " ((comp/factory Address) address)))
+      {:query [:player/id :player/name {:player/address (comp/get-query Address)}]
+       :ident :player/id}
+      (li "name: " name " lives at: " ((comp/factory Address) address)))
 
     (def ui-player (comp/factory Player {:keyfn :player/id}))
 
     (defsc Team [_ {:team/keys [name players]}]
-           {:query [:team/id :team/name {:team/players (comp/get-query Player)}]
-            :ident :team/id}
-           (div (h2 "Team " name ":")
-                (ol (map ui-player players))))
+      {:query [:team/id :team/name {:team/players (comp/get-query Player)}]
+       :ident :team/id}
+      (div (h2 "Team " name ":")
+           (ol (map ui-player players))))
 
     (def ui-team (comp/factory Team {:keyfn :team/id}))
 
     (defsc Root5 [_ {teams :teams}]
-           {:query [{:teams (comp/get-query Team)}]} ; NOTE: This is on purpose incomplete
-           (div
-             (h1 "Teams")
-             (p "Debug: teams = " (dom/code (pr-str teams)))
-             (map ui-team teams)))
+      {:query [{:teams (comp/get-query Team)}]} ; NOTE: This is on purpose incomplete
+      (div
+       (h1 "Teams")
+       (p "Debug: teams = " (dom/code (pr-str teams)))
+       (map ui-team teams)))
 
     (def data-tree
       "The data that our UI should display"
       {:teams [#:team{:name "Hikers" :id :hikers
-                      :players [#:player{:name "Jon" :address #:address{:city "Oslo"} :id 1}
-                                #:player{:name "Ola" :address #:address{:city "Trondheim"} :id 2}]}]})
+                      :players [#:player{:name "Jon" :address #:address{:city "Oslo" :id 1} :id 1}
+                                #:player{:name "Ola" :address #:address{:city "Trondheim" :id 2} :id 2}]}]})
 
     ;; Render the app (without any data so far):
     (def app5 (config-and-render! Root5))
 
     (merge/merge! app5 data-tree (comp/get-query Root5))
-    ,))
+    #_(merge/merge-component!
+     app5
+     Team
+     (-> data-tree :teams first)
+     :append [:teams]))
+    )
 
 (comment ; 5 "Normalization and merge-component!"
   ;; VARIANT 5.4
